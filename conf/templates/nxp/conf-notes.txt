@@ -1,0 +1,22 @@
+
+----------------------------------------------------------------------
+__   __         _          ____  _       _    __                      
+\ \ / /__   ___| |_ ___   |  _ \| | __ _| |_ / _| ___  _ __ _ __ ___  
+ \ V / _ \ / __| __/ _ \  | |_) | |/ _` | __| |_ / _ \| '__| '_ ` _ \ 
+  | | (_) | (__| || (_) | |  __/| | (_| | |_|  _| (_) | |  | | | | | |
+  |_|\___/ \___|\__\___/  |_|   |_|\__,_|\__|_|  \___/|_|  |_| |_| |_|
+
+----------------------------------------------------------------------
+
+Default distro: fsl-framebuffer
+Default machine: mx6ull-c-q
+
+Common targets are:
+    core-image-minimal
+
+You can run bitbake as follows to build a specific image:
+    bitbake core-image-minimal
+
+Or build with other DISTROs:
+    DISTRO=fslc-framebuffer bitbake core-image-minimal
+

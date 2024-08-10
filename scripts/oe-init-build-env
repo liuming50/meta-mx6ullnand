@@ -1,0 +1,113 @@
+#!/bin/sh
+
+#
+# Helper functions
+#
+usage () {
+    cat >&2 <<EOF
+
+Usage: [TEMPLATE=<TEMPLATE>] source ${BASH_SOURCE[0]} [BUILDDIR]
+
+EOF
+}
+
+variable_validation() {
+    local LAYERS=$1
+    local -n VARREF=$2
+    local VARNAME=$(echo $2 | tr '[:upper:]' '[:lower:]')
+
+    if [ -z "${VARREF}" -o "${VARREF}" = "INVALID" ]; then
+        local VARTABLE=
+        for ITEM in ${LAYERS}; do
+            VARTABLE="${VARTABLE} $(echo "${ITEM}" | cut -d'(' -f1) \
+                      $(echo "${ITEM}" | cut -d'(' -f2 | cut -d')' -f1)"
+        done
+
+        # whiptail
+        which whiptail > /dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            VARREF=$(whiptail --title "Available ${VARNAME}s" --menu \
+                     "Please choose a ${VARNAME}" 0 0 20 \
+                     ${VARTABLE} 3>&1 1>&2 2>&3)
+        fi
+
+        # dialog
+        if [ -z "${VARREF}" -o "${VARREF}" = "INVALID" ]; then
+            which dialog > /dev/null 2>&1
+            if [ $? -eq 0 ]; then
+                VARREF=$(dialog --title "Available ${VARNAME}s" --menu \
+                        "Please choose a ${VARNAME}" 0 0 20 ${VARTABLE} \
+                        3>&1 1>&2 2>&3)
+            fi
+        fi
+
+        # guard against Ctrl-D or cancel
+        if [  -z "${VARREF}" -o "${VARREF}" = "INVALID" ]; then
+            echo "To choose a ${VARNAME} interactively please install whiptail or dialog."
+            echo "To choose a ${VARNAME} non-interactively please use the following:"
+            echo "    ${!VARREF}=<your-${VARNAME}> . ./poky-init-build-env"
+            echo ""
+            echo "Press <ENTER> to see a list of your choices"
+            read -r
+            echo "${LAYERS}" | sed -e 's/(/ (/g' | sed -e 's/)/)\n/g' |
+                    sed -e 's/^ */\t/g'
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
+#
+# Normally this is called as '. ./oe-init-build-env builddir'
+#
+# This works in most shells (not dash), but not all of them pass arg1 when
+# being sourced.   To workaround the shell limitation use "set arg1" prior
+# to sourcing this script.
+#
+if [ -n "$BASH_SOURCE" ]; then
+   THIS_SCRIPT_DIR="$(dirname $BASH_SOURCE)"
+elif [ -n "$ZSH_NAME" ]; then
+   THIS_SCRIPT_DIR="$(dirname $0)"
+else
+   THIS_SCRIPT_DIR="$(pwd)"
+fi
+
+if [ "$(whoami)" = "root" ]; then
+    echo "ERROR: do not build Yocto as root. Exiting..." >&2
+    return 1
+fi
+
+if [ $# -gt 1 ]; then
+    usage
+    return 1
+fi
+
+# Create a common list of "<template>(<layer>)", sorted by <template>
+TEMPLATELAYERS=$(find layers -print | grep "conf/templates/nxp/.*/bblayers.conf.append" |
+            sed -e "s#/bblayers\.conf\.append##g" -e "s#layers/##" |
+            awk -F'/conf/templates/nxp/' '{print $NF "(" $1 ")"}' | LC_ALL=C sort)
+
+# template sanity check
+echo $TEMPLATELAYERS | grep -q "$TEMPLATE(.*)" || TEMPLATE="INVALID"
+
+# Validate TEMPLATE
+variable_validation "$TEMPLATELAYERS" "TEMPLATE" || return 1
+
+TOP_DIR=$(realpath $THIS_SCRIPT_DIR)
+TEMPLATECONF=$TOP_DIR/layers/meta-mx6ullnand/conf/templates/nxp
+
+. $TOP_DIR/layers/poky/oe-init-build-env ${1-build-$TEMPLATE}
+. $TOP_DIR/layers/bitbake-bash-completion/bitbake
+
+cp --remove-destination $TOP_DIR/layers/meta-mx6ullnand/conf/templates/nxp/$TEMPLATE/bblayers.conf.append conf/bblayers.$TEMPLATE.inc
+cp --remove-destination $TOP_DIR/layers/meta-mx6ullnand/conf/templates/nxp/$TEMPLATE/local.conf.append conf/local.conf.$TEMPLATE.inc
+
+export NXP_TEMPLATE=$TEMPLATE
+export NXP_TOP_DIR=$TOP_DIR
+
+if ! echo $BB_ENV_PASSTHROUGH_ADDITIONS | grep -q "NXP_TEMPLATE"; then
+    export BB_ENV_PASSTHROUGH_ADDITIONS="$BB_ENV_PASSTHROUGH_ADDITIONS NXP_TEMPLATE NXP_TOP_DIR"
+fi
+
+export PATH=$TOP_DIR/layers/meta-mx6ullnand/scripts:$PATH

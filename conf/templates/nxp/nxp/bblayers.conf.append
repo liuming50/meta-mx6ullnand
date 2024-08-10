@@ -1,0 +1,5 @@
+BBLAYERS += " \
+    ${NXP_TOP_DIR}/layers/meta-freescale \
+    ${NXP_TOP_DIR}/layers/meta-freescale-distro \
+    ${NXP_TOP_DIR}/layers/meta-freescale-3rdparty \
+"
