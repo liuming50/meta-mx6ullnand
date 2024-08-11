@@ -1,0 +1,30 @@
+From 4a635a179a4f9e089abf1ad9320fb2c4386a603f Mon Sep 17 00:00:00 2001
+From: Ming Liu <liu.ming50@gmail.com>
+Date: Sun, 11 Aug 2024 11:56:04 +0200
+Subject: [PATCH] mx6ullevk.h: add mem parameters
+
+Upstream-Status: Inappropriate [NXP BSP]
+
+Signed-off-by: Ming Liu <liu.ming50@gmail.com>
+---
+ include/configs/mx6ullevk.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/configs/mx6ullevk.h b/include/configs/mx6ullevk.h
+index 9a0c14efce5..8667737b78c 100644
+--- a/include/configs/mx6ullevk.h
++++ b/include/configs/mx6ullevk.h
+@@ -63,8 +63,8 @@
+ 	"fdt_high=0xffffffff\0"	  \
+ 	"tee_addr=0x84000000\0" \
+ 	"console=ttymxc0\0" \
+-	"bootargs=console=ttymxc0,115200 ubi.mtd=nandrootfs "  \
+-		"root=ubi0:rootfs rootfstype=ubifs "		     \
++	"bootargs=console=ttymxc0,115200 cma=96M mem=256M ubi.mtd=nandrootfs "  \
++		"root=ubi0:nandrootfs rootfstype=ubifs "		     \
+ 		BOOTARGS_CMA_SIZE \
+ 		MFG_NAND_PARTITION \
+ 		"\0" \
+-- 
+2.34.1
+

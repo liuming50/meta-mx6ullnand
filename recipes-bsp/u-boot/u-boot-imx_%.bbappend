@@ -1,10 +1,6 @@
-
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-SRC_URI += "file://defconfig"
-
-do_configure:prepend() {
-    cat ${WORKDIR}/defconfig >> ${B}/.config
-}
-
-COMPATIBLE_MACHINE = "(mx6ull|mx6ull-c-q|mx6-generic-bsp)"
+SRC_URI:append = " \
+    file://custom.cfg \
+    file://0001-mx6ullevk.h-add-mem-parameters.patch \
+"
