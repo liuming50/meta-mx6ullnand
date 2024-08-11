@@ -1,1 +1,1 @@
-MACHINE ?= "mx6ull-c-q"
+MACHINE ?= "imx6ullevk"

@@ -9,7 +9,7 @@ __   __         _          ____  _       _    __
 ----------------------------------------------------------------------
 
 Default distro: fsl-framebuffer
-Default machine: mx6ull-c-q
+Default machine: imx6ullevk
 
 Common targets are:
     core-image-minimal
